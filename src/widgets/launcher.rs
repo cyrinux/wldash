@@ -36,6 +36,9 @@ pub struct Launcher<'a> {
     dirty: bool,
     tx: Sender<Cmd>,
     counter: Data,
+    hidden: Vec<Desktop>,
+    visible: usize,
+    last_visible: usize,
 }
 
 impl<'a> Launcher<'a> {
@@ -64,11 +67,14 @@ impl<'a> Launcher<'a> {
             dirty: true,
             tx: listener,
             counter: Data::load().unwrap_or_default(),
+            hidden: vec![],
+            visible: 0,
+            last_visible: 0,
         })
     }
 
     fn draw_launcher(
-        &self,
+        &mut self,
         buf: &mut Buffer,
         bg: &Color,
         width: u32,
@@ -93,6 +99,8 @@ impl<'a> Launcher<'a> {
             0
         };
 
+        self.visible = 0;
+
         let mut width_remaining: i32 = (width - x_off) as i32;
         let fuzzy_matcher = SkimMatcherV2::default();
         for (idx, m) in self.matches.iter().enumerate() {
@@ -100,6 +108,7 @@ impl<'a> Launcher<'a> {
                 Ok(b) => b,
                 Err(_) => break,
             };
+
             let size = if idx == self.offset {
                 let (_, indices) = fuzzy_matcher
                     .fuzzy_indices(&m.name.to_lowercase(), &self.input.to_lowercase())
@@ -127,6 +136,8 @@ impl<'a> Launcher<'a> {
 
             x_off += size.0 + self.font_size / 2;
             width_remaining -= (size.0 + self.font_size / 2) as i32;
+
+            self.visible += 1;
 
             if width_remaining < 0 {
                 break;
@@ -318,6 +329,9 @@ impl<'a> Widget for Launcher<'a> {
                 let mut matcher = Matcher::new(self.counter.clone());
 
                 for desktop in self.options.iter() {
+                    if self.hidden.contains(&desktop) {
+                        continue;
+                    }
                     matcher.try_match(
                         desktop.clone(),
                         &desktop.name.to_lowercase(),
@@ -464,14 +478,35 @@ impl<'a> Widget for Launcher<'a> {
                 };
             }
             keysyms::XKB_KEY_Tab => {
-                if !self.matches.is_empty() && self.offset < self.matches.len() - 1 {
-                    self.offset += 1;
+                if self.offset < self.matches.len() - 1 {
+                    let last_entry_before_next_page = self.visible - 2;
+                    let is_last_match_before_next_page = self.offset == last_entry_before_next_page;
+                    let is_last_match = self.visible == self.matches.len();
+                    let is_last_page = self.visible == self.matches.len();
+                    if is_last_match_before_next_page && !is_last_match {
+                        self.last_visible = last_entry_before_next_page;
+                        self.offset = 1;
+                        for _ in 0..last_entry_before_next_page {
+                            self.hidden.push(self.matches.remove(0).clone());
+                        }
+                    } else if is_last_match_before_next_page && is_last_page {
+                        self.hidden.push(self.matches.remove(0).clone());
+                    } else {
+                        self.offset += 1;
+                    }
                     self.dirty = true;
                 }
             }
             keysyms::XKB_KEY_ISO_Left_Tab => {
-                if !self.matches.is_empty() && self.offset > 0 {
-                    self.offset -= 1;
+                if self.offset > 0 {
+                    if self.offset == 1 && !self.hidden.is_empty() {
+                        self.offset = self.last_visible;
+                        for _ in 0..self.last_visible {
+                            self.hidden.pop();
+                        }
+                    } else {
+                        self.offset -= 1;
+                    }
                     self.dirty = true;
                 }
             }
@@ -498,6 +533,7 @@ impl<'a> Widget for Launcher<'a> {
                     }
                     self.cursor += 1;
                     self.offset = 0;
+                    self.hidden.clear();
                     self.result = None;
                     self.dirty = true;
                 }
