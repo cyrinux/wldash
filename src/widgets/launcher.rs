@@ -479,17 +479,22 @@ impl<'a> Widget for Launcher<'a> {
             }
             keysyms::XKB_KEY_Tab => {
                 if self.offset < self.matches.len() - 1 {
-                    let last_entry_before_next_page = self.visible - 2;
+                    let last_entry_before_next_page: usize = if self.visible <= 2 {
+                        self.visible - 1
+                    } else {
+                        self.visible - 2
+                    };
                     let is_last_match_before_next_page = self.offset == last_entry_before_next_page;
                     let is_last_match = self.visible == self.matches.len();
-                    let is_last_page = self.visible == self.matches.len();
+                    let is_last_page = self.visible + self.hidden.len() == self.matches.len();
+                    let is_all_visible = self.visible == self.matches.len();
                     if is_last_match_before_next_page && !is_last_match {
                         self.last_visible = last_entry_before_next_page;
                         self.offset = 1;
                         for _ in 0..last_entry_before_next_page {
                             self.hidden.push(self.matches.remove(0).clone());
                         }
-                    } else if is_last_match_before_next_page && is_last_page {
+                    } else if is_last_match_before_next_page && !is_all_visible && is_last_page {
                         self.hidden.push(self.matches.remove(0).clone());
                     } else {
                         self.offset += 1;
