@@ -90,7 +90,7 @@ impl<'a> Calendar<'a> {
                 ))?,
                 background_color,
                 &Color::new(1.0, 1.0, 1.0, 1.0),
-                &wk_chr,
+                wk_chr,
             )?;
         }
 

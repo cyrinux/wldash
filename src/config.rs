@@ -98,22 +98,18 @@ impl Widget {
             Widget::HorizontalLayout(widgets) => Some(widget::HorizontalLayout::new(
                 widgets
                     .into_iter()
-                    .map(|x| x.construct(time, tx.clone(), fonts))
-                    .filter(|x| x.is_some())
-                    .map(|x| x.unwrap())
+                    .filter_map(|x| x.construct(time, tx.clone(), fonts))
                     .collect(),
             )),
             Widget::VerticalLayout(widgets) => Some(widget::VerticalLayout::new(
                 widgets
                     .into_iter()
-                    .map(|x| x.construct(time, tx.clone(), fonts))
-                    .filter(|x| x.is_some())
-                    .map(|x| x.unwrap())
+                    .filter_map(|x| x.construct(time, tx.clone(), fonts))
                     .collect(),
             )),
             Widget::Clock { font, font_size } => match widgets::clock::Clock::new(
                 time,
-                get_font(&font.or_else(|| Some("sans".to_string())).unwrap(), &fonts),
+                get_font(&font.or_else(|| Some("sans".to_string())).unwrap(), fonts),
                 font_size,
             ) {
                 Ok(w) => Some(w),
@@ -121,7 +117,7 @@ impl Widget {
             },
             Widget::Date { font, font_size } => match widgets::date::Date::new(
                 time,
-                get_font(&font.or_else(|| Some("sans".to_string())).unwrap(), &fonts),
+                get_font(&font.or_else(|| Some("sans".to_string())).unwrap(), fonts),
                 font_size,
             ) {
                 Ok(w) => Some(w),
@@ -136,11 +132,11 @@ impl Widget {
                 time,
                 get_font(
                     &font_primary.or_else(|| Some("sans".to_string())).unwrap(),
-                    &fonts,
+                    fonts,
                 ),
                 get_font(
                     &font_secondary.or_else(|| Some("mono".to_string())).unwrap(),
-                    &fonts,
+                    fonts,
                 ),
                 font_size,
                 sections,
@@ -153,7 +149,7 @@ impl Widget {
                 term_opener,
                 url_opener,
             } => Some(widgets::launcher::Launcher::new(
-                get_font(&font.or_else(|| Some("sans".to_string())).unwrap(), &fonts),
+                get_font(&font.or_else(|| Some("sans".to_string())).unwrap(), fonts),
                 font_size,
                 length,
                 tx,
@@ -171,7 +167,7 @@ impl Widget {
                 length,
             } => {
                 match widgets::battery::UpowerBattery::new(
-                    get_font(&font.or_else(|| Some("sans".to_string())).unwrap(), &fonts),
+                    get_font(&font.or_else(|| Some("sans".to_string())).unwrap(), fonts),
                     font_size,
                     length,
                     tx,
@@ -186,14 +182,14 @@ impl Widget {
                 font_size,
                 length,
             } => {
-                let d = if device == "" {
+                let d = if device.is_empty() {
                     "intel_backlight"
                 } else {
                     &device
                 };
                 match widgets::backlight::Backlight::new(
                     d,
-                    get_font(&font.or_else(|| Some("sans".to_string())).unwrap(), &fonts),
+                    get_font(&font.or_else(|| Some("sans".to_string())).unwrap(), fonts),
                     font_size,
                     length,
                 ) {
@@ -208,7 +204,7 @@ impl Widget {
                 length,
             } => {
                 match widgets::audio::PulseAudio::new(
-                    get_font(&font.or_else(|| Some("sans".to_string())).unwrap(), &fonts),
+                    get_font(&font.or_else(|| Some("sans".to_string())).unwrap(), fonts),
                     font_size,
                     length,
                     tx,
@@ -224,7 +220,7 @@ impl Widget {
                 length,
             } => {
                 match widgets::audio::Alsa::new(
-                    get_font(&font.or_else(|| Some("sans".to_string())).unwrap(), &fonts),
+                    get_font(&font.or_else(|| Some("sans".to_string())).unwrap(), fonts),
                     font_size,
                     length,
                 ) {
@@ -238,16 +234,14 @@ impl Widget {
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub enum OutputMode {
     All,
+    #[default]
     Active,
 }
 
-impl Default for OutputMode {
-    fn default() -> Self {
-        OutputMode::Active
-    }
-}
+
 
 fn default_fonts() -> HashMap<String, String> {
     let mut map = HashMap::with_capacity(2);

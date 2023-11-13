@@ -133,7 +133,7 @@ impl MemPool {
                     *my_buffer_count
                 };
                 if new_count == 0 {
-                    (&mut *my_callback.borrow_mut())(dispatch_data);
+                    (*my_callback.borrow_mut())(dispatch_data);
                 }
             }
             _ => unreachable!(),

@@ -47,7 +47,7 @@ impl<'a> Widget for Date<'a> {
     fn leave(&mut self) {}
     fn size(&self) -> (u32, u32) {
         (
-            (3 * self.ch_width + 8 * self.digit_width + 4 * self.spacing_width) as u32,
+            (3 * self.ch_width + 8 * self.digit_width + 4 * self.spacing_width),
             self.size.ceil() as u32,
         )
     }

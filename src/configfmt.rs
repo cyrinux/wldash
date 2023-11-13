@@ -1,8 +1,10 @@
 use serde::{de::DeserializeOwned, Serialize};
 use std::io::BufRead;
 
+#[derive(Default)]
 pub enum ConfigFmt {
     #[cfg(feature = "yaml-cfg")]
+    #[default]
     Yaml,
     #[cfg(feature = "json-cfg")]
     Json,
@@ -46,16 +48,4 @@ impl ConfigFmt {
     }
 }
 
-impl Default for ConfigFmt {
-    fn default() -> Self {
-        // attributes require curly braces to work
-        #[cfg(feature = "yaml-cfg")]
-        {
-            ConfigFmt::Yaml
-        }
-        #[cfg(all(feature = "json-cfg", not(feature = "yaml-cfg")))]
-        {
-            ConfigFmt::Json
-        }
-    }
-}
+

@@ -89,7 +89,7 @@ fn main() {
     let fonts: FontMap = {
         let load_font = |font_name| {
             let path = FontSeeker::from_string(font_name);
-            FontLoader::from_path(&path).expect(&format!("Loading {} failed", path.display()))
+            FontLoader::from_path(&path).unwrap_or_else(|| panic!("Loading {} failed", path.display()))
         };
 
         config

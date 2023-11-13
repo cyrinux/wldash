@@ -31,11 +31,11 @@ impl Desktop {
         )?;
         match file.section(Some("Desktop Entry")) {
             Some(desktop) => Ok(Desktop {
-                entry_type: desktop.get("Type").unwrap_or(&"".to_string()).to_string(),
-                name: desktop.get("Name").unwrap_or(&"".to_string()).to_string(),
-                term: desktop.get("Terminal").unwrap_or(&"".to_string()) == "true",
-                no_display: desktop.get("NoDisplay").unwrap_or(&"".to_string()) == "true",
-                hidden: desktop.get("Hidden").unwrap_or(&"".to_string()) == "true",
+                entry_type: desktop.get("Type").unwrap_or("").to_string(),
+                name: desktop.get("Name").unwrap_or("").to_string(),
+                term: desktop.get("Terminal").unwrap_or("") == "true",
+                no_display: desktop.get("NoDisplay").unwrap_or("") == "true",
+                hidden: desktop.get("Hidden").unwrap_or("") == "true",
                 exec: desktop.get("Exec").map(|x| x.to_string()),
                 url: desktop.get("URL").map(|x| x.to_string()),
                 keywords: desktop
@@ -43,10 +43,10 @@ impl Desktop {
                     .map(|x| {
                         x.split(';')
                             .map(|y| y.trim().to_string())
-                            .filter(|z| z != "")
+                            .filter(|z| !z.is_empty())
                             .collect()
                     })
-                    .unwrap_or_else(|| vec![]),
+                    .unwrap_or_else(std::vec::Vec::new),
             }),
             None => Err(Box::new(io_error::new(
                 ErrorKind::NotFound,

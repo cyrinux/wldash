@@ -56,7 +56,7 @@ impl<'a> Buffer<'a> {
         } else {
             // Row-by-row copy
             for cur_y in y as isize..(y + height) as isize {
-                let offset = x as isize + cur_y as isize * self.dimensions.0 as isize;
+                let offset = x as isize + cur_y * self.dimensions.0 as isize;
                 unsafe {
                     std::ptr::copy(
                         (self.buf.as_ptr() as *const u32).offset(offset),

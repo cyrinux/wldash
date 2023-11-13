@@ -223,7 +223,7 @@ impl KbdHandler {
             .map(NativeEndian::read_u32)
             .collect::<Vec<_>>();
         let keys: Vec<u32> = rawkeys.iter().map(|k| state.get_one_sym_raw(*k)).collect();
-        (&mut *self.callback.borrow_mut())(
+        (*self.callback.borrow_mut())(
             Event::Enter {
                 serial,
                 surface,
@@ -242,7 +242,7 @@ impl KbdHandler {
         surface: wl_surface::WlSurface,
         dispatch_data: wayland_client::DispatchData,
     ) {
-        (&mut *self.callback.borrow_mut())(Event::Leave { serial, surface }, object, dispatch_data);
+        (*self.callback.borrow_mut())(Event::Leave { serial, surface }, object, dispatch_data);
     }
 
     fn key(
@@ -291,7 +291,7 @@ impl KbdHandler {
             (sym, utf8, repeats)
         };
 
-        (&mut *self.callback.borrow_mut())(
+        (*self.callback.borrow_mut())(
             Event::Key {
                 serial,
                 time,
@@ -318,7 +318,7 @@ impl KbdHandler {
         {
             let mut state = self.state.borrow_mut();
             state.update_modifiers(mods_depressed, mods_latched, mods_locked, group);
-            (&mut *self.callback.borrow_mut())(
+            (*self.callback.borrow_mut())(
                 Event::Modifiers {
                     modifiers: state.mods_state(),
                 },
@@ -335,7 +335,7 @@ impl KbdHandler {
         delay: i32,
         dispatch_data: wayland_client::DispatchData,
     ) {
-        (&mut *self.callback.borrow_mut())(
+        (*self.callback.borrow_mut())(
             Event::RepeatInfo { rate, delay },
             object,
             dispatch_data,

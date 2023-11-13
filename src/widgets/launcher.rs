@@ -403,7 +403,7 @@ impl<'a> Widget for Launcher<'a> {
                 match self.input.chars().next() {
                     Some('=') => {
                         if let Some(ref v) = self.result {
-                            let _ = wlcopy(&v);
+                            let _ = wlcopy(v);
                         }
                     }
                     Some('!') => {

@@ -120,7 +120,7 @@ impl<'a> Widget for BarWidget<'a> {
             iter += 1.0;
             draw_bar(
                 &mut buf.offset((bar_off, 0))?,
-                &c,
+                c,
                 width - bar_off,
                 self.font_size,
                 val,

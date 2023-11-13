@@ -258,7 +258,7 @@ impl<'a> App<'a> {
                     buf.memset(&Color::new(0.5, 0.75, 0.75, 1.0));
                 }
                 for d in d {
-                    last.copy_to(&mut buf, d.clone());
+                    last.copy_to(&mut buf, *d);
                 }
                 false
             }

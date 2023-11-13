@@ -118,7 +118,7 @@ impl PulseAudioConnection {
 impl PulseAudioClient {
     fn new<F>(listener: F) -> Result<Arc<Mutex<Self>>, ::std::io::Error>
     where
-        F: Fn(Arc<Mutex<Self>>) -> (),
+        F: Fn(Arc<Mutex<Self>>),
         F: Send + 'static + Clone,
     {
         let (tx, rx) = channel();
@@ -287,13 +287,13 @@ impl PulseAudioClient {
 
     fn server_info_callback<F>(s: Arc<Mutex<Self>>, listener: F, server_info: &ServerInfo)
     where
-        F: Fn(Arc<Mutex<Self>>) -> (),
+        F: Fn(Arc<Mutex<Self>>),
         F: Send + 'static,
     {
         match server_info.default_sink_name.clone() {
             None => {}
             Some(default_sink) => {
-                (*s.lock().unwrap()).default_sink = default_sink.into();
+                s.lock().unwrap().default_sink = default_sink.into();
                 listener(s);
             }
         }
@@ -301,7 +301,7 @@ impl PulseAudioClient {
 
     fn sink_info_callback<F>(s: Arc<Mutex<Self>>, listener: F, result: ListResult<&SinkInfo>)
     where
-        F: Fn(Arc<Mutex<Self>>) -> (),
+        F: Fn(Arc<Mutex<Self>>),
         F: Send + 'static,
     {
         match result {
@@ -344,7 +344,7 @@ impl PulseAudioClient {
 impl PulseAudioSoundDevice {
     fn new<F>(listener: F) -> Result<Self, ::std::io::Error>
     where
-        F: Fn() -> (),
+        F: Fn(),
         F: Send + 'static + Clone,
     {
         let inner = Arc::new(Mutex::new(PulseAudioSoundDeviceInner {
@@ -386,7 +386,7 @@ impl PulseAudioSoundDevice {
             let cl = client.lock().unwrap();
             cl.default_sink.to_string()
         };
-        (*inner.lock().unwrap()).name = Some(name.clone());
+        inner.lock().unwrap().name = Some(name.clone());
         let device = PulseAudioSoundDevice { client: cl, inner };
         let (tx, rx) = channel();
         {
